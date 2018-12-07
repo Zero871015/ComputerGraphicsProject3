@@ -1,6 +1,6 @@
 #include "TrainView.h"  
 #include <time.h>
-#define DEBUG
+//#define DEBUG
 TrainView::TrainView(QWidget *parent) :  
 QGLWidget(parent)  
 {  
@@ -27,6 +27,9 @@ void TrainView::initializeGL()
 	skybox = new Skybox();
 	skybox->Init();
 
+	water = new Mesh();
+	water->Init();
+
 	//Initialize texture 
 	initializeTexture();
 }
@@ -42,12 +45,12 @@ void TrainView::initializeTexture()
 	const QImage right = QImage("./Textures/right.png").mirrored().convertToFormat(QImage::Format_RGBA8888);
 	const QImage left = QImage("./Textures/left.png").mirrored().convertToFormat(QImage::Format_RGBA8888);
 #else
-	const QImage up = QImage("./Textures/up.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
-	const QImage down = QImage("./Textures/bottom.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
-	const QImage front = QImage("./Textures/front.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
-	const QImage back = QImage("./Textures/back.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
-	const QImage right = QImage("./Textures/right.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
-	const QImage left = QImage("./Textures/left.jpg").mirrored().convertToFormat(QImage::Format_RGBA8888);
+	const QImage up = QImage("./Textures/skybox_top.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage down = QImage("./Textures/skybox_bottom.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage front = QImage("./Textures/skybox_front.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage back = QImage("./Textures/skybox_back.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage right = QImage("./Textures/skybox_right.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage left = QImage("./Textures/skybox_left.png").convertToFormat(QImage::Format_RGBA8888);
 #endif // DEBUG
 
 	
@@ -61,22 +64,22 @@ void TrainView::initializeTexture()
 	skycube->allocateStorage();
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveX,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
-		(const void*)up.constBits(), 0);
+		(const void*)left.constBits(), 0);
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveY,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
-		(const void*)down.constBits(), 0);
+		(const void*)up.constBits(), 0);
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveZ,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
 		(const void*)front.constBits(), 0);
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeX,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
-		(const void*)back.constBits(), 0);
+		(const void*)right.constBits(), 0);
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeY,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
-		(const void*)right.constBits(), 0);
+		(const void*)down.constBits(), 0);
 	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeZ,
 		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
-		(const void*)left.constBits(), 0);
+		(const void*)back.constBits(), 0);
 
 	skycube->setWrapMode(QOpenGLTexture::ClampToEdge);
 	skycube->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
@@ -221,6 +224,11 @@ void TrainView::paintGL()
 	square->End();*/
 	
 	//phongtest->Paint(ProjectionMatrex, ModelViewMatrex);
+
+	water->Begin();
+	glEnable(GL_FRONT_AND_BACK);
+	water->Paint(ProjectionMatrex, ModelViewMatrex);
+	water->End();
 
 	glColor3f(1, 0, 0);
 }

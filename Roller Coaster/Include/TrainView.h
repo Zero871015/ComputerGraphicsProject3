@@ -13,6 +13,7 @@
 #include "Square.h"
 #include "Phong.h"
 #include "skybox.h"
+#include "Mesh.h"
 
 #include "Model.h"
 #include "point3d.h"
@@ -84,6 +85,7 @@ public:
 	Triangle* triangle;
 	Square* square;
 	Skybox* skybox;
+	Mesh* water;
 	QOpenGLTexture* skycube;
 	GLfloat ProjectionMatrex[16];
 	GLfloat ModelViewMatrex[16];
