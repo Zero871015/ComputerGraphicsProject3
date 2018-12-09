@@ -12,9 +12,14 @@ uniform float amplitude[8];
 uniform float wavelength[8];
 uniform float speed[8];
 uniform vec2 direction[8];
+uniform vec3 EyePos;
 
 out vec3 pos;
 out vec3 nor;
+
+out vec3 pos_eye;
+out vec3 n_eye;
+out mat4 V;
 
 float wave(int i, float x, float y) {
     float frequency = 2*pi/wavelength[i];
@@ -60,9 +65,13 @@ vec3 waveNormal(float x, float y) {
 
 void main(void)
 {
+    V = ModelViewMatrix;
     pos = vertex;
     pos.y = waveHeight(pos.x,pos.z)+20;
     nor = waveNormal(pos.x,pos.z);
     gl_Position = ProjectionMatrix * ModelViewMatrix * vec4(pos, 1.0);
     nor = mat3(ModelViewMatrix) * nor;
+
+    pos_eye = vec3(ModelViewMatrix * vec4(pos,1.0));
+    n_eye = vec3(ModelViewMatrix * vec4(nor,1.0));
 }

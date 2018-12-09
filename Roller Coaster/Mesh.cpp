@@ -33,7 +33,6 @@ void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix)
 	shaderProgram->setUniformValue("ProjectionMatrix", P);
 	//pass modelview matrix to shader
 	shaderProgram->setUniformValue("ModelViewMatrix", MV);
-
 	// Bind the buffer so that it is the current active buffer
 	vvbo.bind();
 	// Enable Attribute 0
@@ -49,6 +48,8 @@ void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix)
 	shaderProgram->setUniformValueArray("wavelength", this->waves.waveLength, MAX_WAVE, 1);
 	shaderProgram->setUniformValueArray("speed", this->waves.speed, MAX_WAVE, 1);
 	shaderProgram->setUniformValueArray("direction", this->waves.direction, MAX_WAVE);
+	QVector3D EyePos(MV[3][0] , MV[3][1] , MV[3][2]);
+	shaderProgram->setUniformValue("EyePos", EyePos);
 	
 	//Draw triangles with 4 indices starting from the 0th index
 	//glDrawArrays(GL_TRIANGLE_FAN, 0, vertices.size());
@@ -167,7 +168,11 @@ void Mesh::InitWave()
 		this->waves.speed[i] = 0;
 		this->waves.direction[i] = QVector2D(1, 0);
 	}
-	AddSineWave(10, 2, 10, QVector2D(1, 0));
+	AddSineWave(10, 2, 3, QVector2D(1, 1));
+	AddSineWave(9, 1.5, 15, QVector2D(1, 0));
+	AddSineWave(3, 1, 20, QVector2D(0, 1));
+	AddSineWave(20, 2.5, 5, QVector2D(1, 0.5));
+	AddSineWave(6, 2, 10, QVector2D(1.5, 0));
 }
 
 void Mesh::AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction)

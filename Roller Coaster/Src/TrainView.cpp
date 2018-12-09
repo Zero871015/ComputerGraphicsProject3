@@ -224,9 +224,10 @@ void TrainView::paintGL()
 	square->End();*/
 	
 	//phongtest->Paint(ProjectionMatrex, ModelViewMatrex);
-
 	water->Begin();
 	glEnable(GL_FRONT_AND_BACK);
+	Textures[1]->bind();
+	skybox->shaderProgram->setUniformValue("skybox", 0);
 	water->Paint(ProjectionMatrex, ModelViewMatrex);
 	water->End();
 
