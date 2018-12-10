@@ -59,7 +59,7 @@ vec3 waveNormal(float x, float y) {
         dx += dWavedx(i, x, y);
         dy += dWavedy(i, x, y);
     }
-    vec3 n = vec3(-dx, -dy, 1.0);
+    vec3 n = vec3(-dx, 1.0, -dy);
     return normalize(n);
 }
 
@@ -73,5 +73,6 @@ void main(void)
     nor = mat3(ModelViewMatrix) * nor;
 
     pos_eye = vec3(ModelViewMatrix * vec4(pos,1.0));
-    n_eye = vec3(ModelViewMatrix * vec4(nor,1.0));
+    //n_eye = vec3(ModelViewMatrix * vec4(0,1,0,0.0));
+    n_eye = nor;
 }

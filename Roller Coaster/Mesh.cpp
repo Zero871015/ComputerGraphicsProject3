@@ -168,11 +168,12 @@ void Mesh::InitWave()
 		this->waves.speed[i] = 0;
 		this->waves.direction[i] = QVector2D(1, 0);
 	}
-	AddSineWave(10, 2, 3, QVector2D(1, 1));
-	AddSineWave(9, 1.5, 15, QVector2D(1, 0));
-	AddSineWave(3, 1, 20, QVector2D(0, 1));
-	AddSineWave(20, 2.5, 5, QVector2D(1, 0.5));
-	AddSineWave(6, 2, 10, QVector2D(1.5, 0));
+	AddSineWave(25, 0.8, 3, QVector2D(1, 1));
+	AddSineWave(50, 0.3, 15, QVector2D(1, 0));
+	AddSineWave(30, 0.4, 20, QVector2D(0, 1));
+	AddSineWave(20, 0.5, 5, QVector2D(1, -0.5));
+	AddSineWave(60, 2, 1, QVector2D(-1.5, 0));
+
 }
 
 void Mesh::AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction)
