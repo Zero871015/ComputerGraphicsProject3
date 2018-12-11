@@ -30,9 +30,11 @@ public:
 	QOpenGLShader* vertexShader;
 	QOpenGLShader* fragmentShader;
 	QVector<QVector3D> vertices;
+	QVector<QVector2D> uvs;
 	QVector<GLuint> indices;
 	QOpenGLVertexArrayObject vao;
 	QOpenGLBuffer vvbo;
+	QOpenGLBuffer uvbo;
 	QOpenGLBuffer* vebo;
 	Wave waves;
 	GLint count_wave = 0;

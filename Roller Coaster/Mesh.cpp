@@ -42,6 +42,11 @@ void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix)
 	//unbind buffer
 	vvbo.release();
 
+	uvbo.bind();
+	shaderProgram->enableAttributeArray(1);
+	shaderProgram->setAttributeArray(1, GL_FLOAT, 0, 2, NULL);
+	uvbo.release();
+
 	shaderProgram->setUniformValue("time", time);
 	shaderProgram->setUniformValue("numWaves", count_wave);
 	shaderProgram->setUniformValueArray("amplitude", this->waves.amplitude, MAX_WAVE, 1);
@@ -103,6 +108,22 @@ void Mesh::InitVBO()
 	// Allocate and initialize the information
 	vvbo.allocate(vertices.constData(), vertices.size() * sizeof(QVector3D));
 
+
+	for (int i = 0; i < 200; i++)
+	{
+		for (int j = 0; j < 200; j++)
+		{
+			uvs << QVector2D(i / 199.0, j / 199.0);
+		}
+	}
+	// Create Buffer for uv
+	uvbo.create();
+	// Bind the buffer so that it is the current active buffer
+	uvbo.bind();
+	// Since we will never change the data that we are about to pass the Buffer, we will say that the Usage Pattern is StaticDraw
+	uvbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	// Allocate and initialize the information
+	uvbo.allocate(uvs.constData(), uvs.size() * sizeof(QVector2D));
 }
 
 void Mesh::InitEBO()
@@ -168,12 +189,13 @@ void Mesh::InitWave()
 		this->waves.speed[i] = 0;
 		this->waves.direction[i] = QVector2D(1, 0);
 	}
-	AddSineWave(25, 0.8, 3, QVector2D(1, 1));
-	AddSineWave(50, 0.3, 15, QVector2D(1, 0));
-	AddSineWave(30, 0.4, 20, QVector2D(0, 1));
-	AddSineWave(20, 0.5, 5, QVector2D(1, -0.5));
-	AddSineWave(60, 2, 1, QVector2D(-1.5, 0));
-
+	
+	AddSineWave(25, 0.08, 30, QVector2D(1, 1));
+	AddSineWave(50, 0.03, 15, QVector2D(1, 0));
+	AddSineWave(30, 0.04, 20, QVector2D(0, 1));
+	AddSineWave(20, 0.05, 50, QVector2D(1, -0.5));
+	AddSineWave(60, 0.2, 10, QVector2D(-1.5, 0));
+	
 }
 
 void Mesh::AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction)

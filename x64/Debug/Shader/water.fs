@@ -20,10 +20,19 @@ in mat4 V;
 
 vec3 baseColor = vec3(0.7,0.7,0.9);
 
+uniform sampler2D normalmap1;
+uniform sampler2D normalmap2;
+in vec2 vUV1;
+in vec2 vUV2;
+
 void main()
 {
+    //normal map
+    vec3 normalmapCol1 = vec3(texture2D(normalmap1,vUV1));
+    vec3 normalmapCol2 = vec3(texture2D(normalmap2,vUV2));
+
     vec3 incident_eye = normalize(pos_eye);
-    vec3 r_normal = normalize(n_eye);
+    vec3 r_normal = normalize(n_eye+normalmapCol1+normalmapCol2);
     vec3 reflectVec = reflect(incident_eye , r_normal);
     reflectVec = vec3(inverse(V) * vec4(reflectVec,0.0));
 
@@ -50,5 +59,7 @@ void main()
 
     //fColor =vec4(outputCol,1.0);
     
-fColor = lColor;
+    fColor = lColor;
+
+
 }
