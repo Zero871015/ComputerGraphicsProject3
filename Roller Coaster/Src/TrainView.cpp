@@ -241,7 +241,7 @@ void TrainView::paintGL()
 	water->shaderProgram->setUniformValue("normalmap2", 0);
 	Textures[4]->bind();
 	water->shaderProgram->setUniformValue("heightmap", 0);
-	water->Paint(ProjectionMatrex, ModelViewMatrex);
+	water->Paint(ProjectionMatrex, ModelViewMatrex, isnormalmap);
 	water->End();
 
 	glColor3f(1, 0, 0);

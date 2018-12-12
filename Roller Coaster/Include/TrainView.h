@@ -70,6 +70,7 @@ public:
 	int track;
 	bool isrun;
 	float t_time;
+	bool isnormalmap;
 	unsigned int DIVIDE_LINE = 500;
 	Pnt3f trainPos;
 	Pnt3f front_t;

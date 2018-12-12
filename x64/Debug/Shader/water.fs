@@ -20,6 +20,7 @@ in mat4 V;
 
 vec3 baseColor = vec3(0.7,0.7,0.9);
 
+uniform float isNormalmap;
 uniform sampler2D normalmap1;
 uniform sampler2D normalmap2;
 in vec2 vUV1;
@@ -27,12 +28,17 @@ in vec2 vUV2;
 
 void main()
 {
-    //normal map
-    vec3 normalmapCol1 = vec3(texture2D(normalmap1,vUV1));
-    vec3 normalmapCol2 = vec3(texture2D(normalmap2,vUV2));
-
+    vec3 r_normal;
+    if(isNormalmap == 1)
+    {
+        //normal map
+        vec3 normalmapCol1 = vec3(texture2D(normalmap1,vUV1));
+        vec3 normalmapCol2 = vec3(texture2D(normalmap2,vUV2));
+        r_normal = normalize(mix(n_eye,normalmapCol1,normalmapCol2));
+    }
+    else
+        r_normal = normalize(n_eye);
     vec3 incident_eye = normalize(pos_eye);
-    vec3 r_normal = normalize(n_eye+normalmapCol1+normalmapCol2);
     vec3 reflectVec = reflect(incident_eye , r_normal);
     reflectVec = vec3(inverse(V) * vec4(reflectVec,0.0));
 
@@ -44,7 +50,7 @@ void main()
 
     float f = pow(1.0-0.66,2.0)/pow(1.0+0.66,2.0);
     float Ratio=f+(1-f)*pow((1-dot(incident_eye,r_normal)),5.0);	//The Ratio may make it error, ignore it.
-    vec3 outputCol = mix(ReflectColor,RefractColor,0.2);	//outputCol is only ReflectColor and RefractColor.
+    vec3 outputCol = mix(ReflectColor,RefractColor,0.4);	//outputCol is only ReflectColor and RefractColor.
 
 
     //Add phong shader.

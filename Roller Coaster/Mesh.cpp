@@ -22,7 +22,7 @@ void Mesh::Begin()
 	vao.bind();
 	vebo->bind();
 }
-void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix)
+void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix, bool isNormalmap)
 {
 	time += 0.01;
 	GLfloat P[4][4];
@@ -33,6 +33,8 @@ void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix)
 	shaderProgram->setUniformValue("ProjectionMatrix", P);
 	//pass modelview matrix to shader
 	shaderProgram->setUniformValue("ModelViewMatrix", MV);
+	//pass whether to open Normalmap
+	shaderProgram->setUniformValue("isNormalmap", GLfloat(isNormalmap));
 	// Bind the buffer so that it is the current active buffer
 	vvbo.bind();
 	// Enable Attribute 0
@@ -96,7 +98,7 @@ void Mesh::InitVBO()
 	{
 		for (int j = 0; j < 200; j++)
 		{
-			vertices << QVector3D(i-100, 3, j);
+			vertices << QVector3D(i-100, 3, j-100);
 		}
 	}
 	// Create Buffer for position

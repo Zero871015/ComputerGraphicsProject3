@@ -49,7 +49,7 @@ public:
 	void InitWave();
 	void DimensionTransformation(GLfloat source[], GLfloat target[][4]);
 	void Begin();
-	void Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix);
+	void Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix , bool isNormalmap);
 	void End();
 
 	void AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction);
