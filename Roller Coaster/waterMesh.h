@@ -43,7 +43,7 @@ public:
 	int width, length;
 	GLfloat* ProjectionMatrix;
 	GLfloat* ModelViewMatrix;
-	QOpenGLTexture* skybox;
+	QOpenGLTexture* skycube;
 	QOpenGLTexture* normalmap1;
 	QOpenGLTexture* normalmap2;
 	QOpenGLTexture* heightmap;
@@ -56,6 +56,7 @@ public:
 	void InitEBO();
 	void InitShader(QString vertexShaderPath, QString fragmentShaderPath);
 	void InitWave();
+	void InitTexture();
 	void DimensionTransformation(GLfloat source[], GLfloat target[][4]);
 	void SetProjectionMatrix(GLfloat* ProjectionMatrix);
 	void SetModelViewMatrix(GLfloat* ModelViewMatrix);

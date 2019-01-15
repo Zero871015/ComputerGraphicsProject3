@@ -95,16 +95,9 @@ void TrainView::initializeTexture()
 	skycube->setWrapMode(QOpenGLTexture::ClampToEdge);
 	skycube->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
 	skycube->setMagnificationFilter(QOpenGLTexture::LinearMipMapLinear);
-
-	QOpenGLTexture* normalmap1 = new QOpenGLTexture(QImage("./Textures/normalmap1.png"));
-	QOpenGLTexture* normalmap2 = new QOpenGLTexture(QImage("./Textures/normalmap2.png"));
-	QOpenGLTexture* heightmap = new QOpenGLTexture(QImage("./Textures/heightmap.png"));
 	
 	Textures.push_back(texture);
 	Textures.push_back(skycube);
-	Textures.push_back(normalmap1);
-	Textures.push_back(normalmap2);
-	Textures.push_back(heightmap);
 }
 void TrainView:: resetArcball()
 	//========================================================================
@@ -247,7 +240,7 @@ void TrainView::paintGL()
 	
 	water->SetModelViewMatrix(ModelViewMatrex);
 	water->SetProjectionMatrix(ProjectionMatrex);
-	water->SetTexture(Textures[1], Textures[2], Textures[3], Textures[4]);
+	//water->SetTexture(Textures[1], Textures[2], Textures[3], Textures[4]);
 	water->Paint(isnormalmap);
 	
 	// performing transformation to the model first, then render

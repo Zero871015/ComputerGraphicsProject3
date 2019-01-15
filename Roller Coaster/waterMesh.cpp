@@ -28,7 +28,7 @@ void waterMesh::SetModelViewMatrix(GLfloat * ModelViewMatrix)
 }
 void waterMesh::SetTexture(QOpenGLTexture* skybox, QOpenGLTexture* normalmap1, QOpenGLTexture* normalmap2, QOpenGLTexture* heightmap)
 {
-	this->skybox = skybox;
+	this->skycube = skybox;
 	this->normalmap1 = normalmap1;
 	this->normalmap2 = normalmap2;
 	this->heightmap = heightmap;
@@ -42,14 +42,14 @@ void waterMesh::Paint(bool isNormalmap)
 	vebo->bind();
 
 	glEnable(GL_FRONT_AND_BACK);
-	skybox->bind();
-	this->shaderProgram->setUniformValue("skybox", 0);
+	skycube->bind();
+	shaderProgram->setUniformValue("skybox", 0);
 	normalmap1->bind();
-	this->shaderProgram->setUniformValue("normalmap1", 0);
+	shaderProgram->setUniformValue("normalmap1", 0);
 	normalmap2->bind();
-	this->shaderProgram->setUniformValue("normalmap2", 0);
+	shaderProgram->setUniformValue("normalmap2", 0);
 	heightmap->bind();
-	this->shaderProgram->setUniformValue("heightmap", 0);
+	shaderProgram->setUniformValue("heightmap", 0);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -110,8 +110,54 @@ void waterMesh::Init()
 	InitVBO();
 	InitEBO();
 	InitWave();
-	//InitTexture();
+	InitTexture();
 }
+
+void waterMesh::InitTexture()
+{
+	normalmap1 = new QOpenGLTexture(QImage("./Textures/normalmap1.png"));
+	normalmap2 = new QOpenGLTexture(QImage("./Textures/normalmap2.png"));
+	heightmap = new QOpenGLTexture(QImage("./Textures/heightmap.png"));
+
+	const QImage up = QImage("./Textures/skybox_top.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage down = QImage("./Textures/skybox_bottom.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage front = QImage("./Textures/skybox_front.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage back = QImage("./Textures/skybox_back.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage right = QImage("./Textures/skybox_right.png").convertToFormat(QImage::Format_RGBA8888);
+	const QImage left = QImage("./Textures/skybox_left.png").convertToFormat(QImage::Format_RGBA8888);
+
+	skycube = new QOpenGLTexture(QOpenGLTexture::TargetCubeMap);
+	skycube->create();
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skycube->textureId());
+
+
+	skycube->setSize(up.width(), up.height(), up.depth());
+	skycube->setFormat(QOpenGLTexture::RGBA8_UNorm);
+	skycube->allocateStorage();
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveX,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)left.constBits(), 0);
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveY,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)up.constBits(), 0);
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapPositiveZ,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)front.constBits(), 0);
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeX,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)right.constBits(), 0);
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeY,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)down.constBits(), 0);
+	skycube->setData(0, 0, QOpenGLTexture::CubeMapNegativeZ,
+		QOpenGLTexture::RGBA, QOpenGLTexture::UInt8,
+		(const void*)back.constBits(), 0);
+
+	skycube->setWrapMode(QOpenGLTexture::ClampToEdge);
+	skycube->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
+	skycube->setMagnificationFilter(QOpenGLTexture::LinearMipMapLinear);
+}
+
 void waterMesh::InitVAO()
 {
 	// Create Vertex Array Object
@@ -143,7 +189,7 @@ void waterMesh::InitVBO()
 	{
 		for (int j = 0; j < length; j++)
 		{
-			uvs << QVector2D(i / width-1.0, j / length-1.0);
+			uvs << QVector2D(i / (width-1.0), j / (length-1.0));
 		}
 	}
 	// Create Buffer for uv
