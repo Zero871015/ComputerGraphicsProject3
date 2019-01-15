@@ -13,7 +13,7 @@
 #include "Square.h"
 #include "Phong.h"
 #include "skybox.h"
-#include "Mesh.h"
+#include "waterMesh.h"
 
 #include "Model.h"
 #include "point3d.h"
@@ -68,6 +68,7 @@ public:
 	int camera;
 	int curve;
 	int track;
+	int shader;
 	bool isrun;
 	float t_time;
 	bool isnormalmap;
@@ -86,7 +87,7 @@ public:
 	Triangle* triangle;
 	Square* square;
 	Skybox* skybox;
-	Mesh* water;
+	waterMesh* water;
 	QOpenGLTexture* skycube;
 	GLfloat ProjectionMatrex[16];
 	GLfloat ModelViewMatrex[16];

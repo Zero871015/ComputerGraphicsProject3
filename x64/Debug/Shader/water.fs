@@ -32,8 +32,11 @@ void main()
     if(isNormalmap == 1)
     {
         //normal map
+        float temp;
         vec3 normalmapCol1 = vec3(texture2D(normalmap1,vUV1));
+        temp = normalmapCol1.y; normalmapCol1.y = normalmapCol1.z; normalmapCol1.z = temp;
         vec3 normalmapCol2 = vec3(texture2D(normalmap2,vUV2));
+        temp = normalmapCol2.y; normalmapCol2.y = normalmapCol2.z; normalmapCol2.z = temp;
         r_normal = normalize(mix(n_eye,normalmapCol1,normalmapCol2));
     }
     else
@@ -66,6 +69,6 @@ void main()
     //fColor =vec4(outputCol,1.0);
     
     fColor = lColor;
-
+    fColor.a = 0.94;
 
 }

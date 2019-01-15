@@ -1,6 +1,11 @@
 #include "TrainView.h"  
 #include <time.h>
 //#define DEBUG
+
+//global model & shader ptrs
+Model *md_RGM79, *md_nanosuit;
+//Shader *texShader, *phongShader;
+
 TrainView::TrainView(QWidget *parent) :  
 QGLWidget(parent)  
 {  
@@ -19,7 +24,7 @@ void TrainView::initializeGL()
 	//Create a square object
 	square = new Square();
 	//Initialize the square object
-	square->Init();
+	square->Init(width(),height());
 
 	phongtest = new Phong();
 	phongtest->Init();
@@ -27,11 +32,17 @@ void TrainView::initializeGL()
 	skybox = new Skybox();
 	skybox->Init();
 
-	water = new Mesh();
-	water->Init();
+	water = new waterMesh(QVector3D(-100,5,-100),200,200);
 
 	//Initialize texture 
 	initializeTexture();
+
+	//phongShader = new Shader("./Shader/Reflect.vs", "./Shader/Reflect.fs");
+	//texShader = new Shader("./Shader/model_loading.vs", "./Shader/model_loading.fs");
+
+	//md_RGM79 = new Model("Model/LowPolyFiatUNO.obj",0);
+
+	//md_nanosuit = new Model("Model/nanosuit/nanosuit.obj",0);
 }
 void TrainView::initializeTexture()
 {
@@ -174,7 +185,11 @@ void TrainView::paintGL()
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
 
+	//Bind FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, square->FramebufferName);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	//Skybox, need to draw first!
+	
 	glDisable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 	skybox->Begin();
@@ -183,7 +198,7 @@ void TrainView::paintGL()
 	skybox->Paint(ProjectionMatrex, ModelViewMatrex);
 	skybox->End();
 	glEnable(GL_DEPTH_TEST);
-
+	
 	//*********************************************************************
 	// now draw the ground plane
 	//*********************************************************************
@@ -230,21 +245,40 @@ void TrainView::paintGL()
 		square->Paint(ProjectionMatrex,ModelViewMatrex);
 	square->End();*/
 	
+	water->SetModelViewMatrix(ModelViewMatrex);
+	water->SetProjectionMatrix(ProjectionMatrex);
+	water->SetTexture(Textures[1], Textures[2], Textures[3], Textures[4]);
+	water->Paint(isnormalmap);
+	
+	// performing transformation to the model first, then render
+	QMatrix4x4 model;
+
+	model.setToIdentity();
+	model.scale(QVector3D(5, 5, 5));
+	//md_nanosuit->Paint(texShader, ProjectionMatrex, ModelViewMatrex, model.data());
+	
 	//phongtest->Paint(ProjectionMatrex, ModelViewMatrex);
-	water->Begin();
-	glEnable(GL_FRONT_AND_BACK);
-	Textures[1]->bind();
-	water->shaderProgram->setUniformValue("skybox", 0);
-	Textures[2]->bind();
-	water->shaderProgram->setUniformValue("normalmap1", 0);
-	Textures[3]->bind();
-	water->shaderProgram->setUniformValue("normalmap2", 0);
-	Textures[4]->bind();
-	water->shaderProgram->setUniformValue("heightmap", 0);
-	water->Paint(ProjectionMatrex, ModelViewMatrex, isnormalmap);
-	water->End();
+	
 
 	glColor3f(1, 0, 0);
+
+	//Draw FBO
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	square->Begin();
+
+	//use render texture
+	//Active Texture
+	glActiveTexture(GL_TEXTURE0);
+
+	//Bind square's texture
+	glBindTexture(GL_TEXTURE_2D, square->renderedTexture);
+	//pass texture to shader
+	square->shaderProgram->setUniformValue("Texture", 0);
+	square->Paint(ProjectionMatrex, ModelViewMatrex,this->shader);
+	square->End();
+	
 }
 
 //************************************************************************
@@ -588,15 +622,47 @@ void TrainView::drawStuff(bool doingShadows)
 	}
 	
 	front_t.normalize();
-	front_t = front_t * 5;
+	//front_t = front_t * 5;
 	cross_t = cross_t * front_t;
 	cross_t.normalize();
-	cross_t = cross_t * 5;
+	//cross_t = cross_t * 5;
 	up_t = cross_t * front_t;
+	up_t = up_t * -1;
 	up_t.normalize();
-	up_t = up_t * -10;
+	//up_t = up_t * -10;
 	if(this->camera!=2)
 		drawCube(doingShadows ,trainPos, front_t, cross_t, up_t);
+	QMatrix4x4 model;
+	QMatrix4x4 test;
+	model.setToIdentity();
+	
+	QVector4D temp;
+	temp[2] = front_t.x; 	temp[1] = up_t.x;		temp[0] = cross_t.x;		temp[3] = 0;
+	test.setRow(0, temp);
+	temp[2] = front_t.y; 	temp[1] = up_t.y;		temp[0] = cross_t.y;		temp[3] = 0;
+	test.setRow(1, temp);
+	temp[2] = front_t.z; 	temp[1] = up_t.z;		temp[0] = cross_t.z;		temp[3] = 0;
+	test.setRow(2, temp);
+	
+	model.translate(QVector3D(trainPos.x, trainPos.y, trainPos.z));
+	model *= test;
+	//float angle;
+	//¤ô¥­
+	//angle = atan2(front_t.x, front_t.z);
+	//model.rotate(angle*180.0/3.141592, 0, 1, 0);
+	//¥õ¨¤
+	//angle = atan2(front_t.y, front_t.z);
+	//model.rotate(angle*180.0 / 3.141592, 1, 0, 0);
+	//¶É±×
+	//angle = atan2(front_t.y, front_t.z);
+	//model.rotate(angle*180.0 / 3.141592, 0, 0, 1);
+
+
+	model.scale(QVector3D(5, 5, 5));
+	//md_RGM79->Paint(phongShader, ProjectionMatrex, ModelViewMatrex, model.data());
+	//md_RGM79->setModelViewMatrix(ModelViewMatrex);
+	//md_RGM79->setProjectionMatrix(ProjectionMatrex);
+	//md_RGM79->Render(model,0);
 
 #ifdef EXAMPLE_SOLUTION
 	// don't draw the train if you're looking out the front window

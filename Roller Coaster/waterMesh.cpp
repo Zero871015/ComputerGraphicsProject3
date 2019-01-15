@@ -1,9 +1,13 @@
-#include "Mesh.h"
+#include "waterMesh.h"
 
-Mesh::Mesh()
+waterMesh::waterMesh(QVector3D location, int width, int length)
 {
+	this->location = location;
+	this->width = width;
+	this->length = length;
+	Init();
 }
-void Mesh::DimensionTransformation(GLfloat source[], GLfloat target[][4])
+void waterMesh::DimensionTransformation(GLfloat source[], GLfloat target[][4])
 {
 	//for uniform value, transfer 1 dimension to 2 dimension
 	int i = 0;
@@ -14,16 +18,41 @@ void Mesh::DimensionTransformation(GLfloat source[], GLfloat target[][4])
 			i++;
 		}
 }
-void Mesh::Begin()
+void waterMesh::SetProjectionMatrix(GLfloat * ProjectionMatrix)
+{
+	this->ProjectionMatrix = ProjectionMatrix;
+}
+void waterMesh::SetModelViewMatrix(GLfloat * ModelViewMatrix)
+{
+	this->ModelViewMatrix = ModelViewMatrix;
+}
+void waterMesh::SetTexture(QOpenGLTexture* skybox, QOpenGLTexture* normalmap1, QOpenGLTexture* normalmap2, QOpenGLTexture* heightmap)
+{
+	this->skybox = skybox;
+	this->normalmap1 = normalmap1;
+	this->normalmap2 = normalmap2;
+	this->heightmap = heightmap;
+}
+void waterMesh::Paint(bool isNormalmap)
 {
 	//Bind the shader we want to draw with
 	shaderProgram->bind();
 	//Bind the VAO we want to draw
 	vao.bind();
 	vebo->bind();
-}
-void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix, bool isNormalmap)
-{
+
+	glEnable(GL_FRONT_AND_BACK);
+	skybox->bind();
+	this->shaderProgram->setUniformValue("skybox", 0);
+	normalmap1->bind();
+	this->shaderProgram->setUniformValue("normalmap1", 0);
+	normalmap2->bind();
+	this->shaderProgram->setUniformValue("normalmap2", 0);
+	heightmap->bind();
+	this->shaderProgram->setUniformValue("heightmap", 0);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	time += 0.01;
 	GLfloat P[4][4];
 	GLfloat MV[4][4];
@@ -63,9 +92,8 @@ void Mesh::Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix, bool isNor
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 	//glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
-}
-void Mesh::End()
-{
+	glDisable(GL_BLEND);
+
 	//Disable Attribute 0&1
 	shaderProgram->disableAttributeArray(0);
 	shaderProgram->disableAttributeArray(1);
@@ -75,7 +103,7 @@ void Mesh::End()
 	shaderProgram->release();
 }
 
-void Mesh::Init()
+void waterMesh::Init()
 {
 	InitShader("./Shader/water.vs", "./Shader/water.fs");
 	InitVAO();
@@ -84,21 +112,21 @@ void Mesh::Init()
 	InitWave();
 	//InitTexture();
 }
-void Mesh::InitVAO()
+void waterMesh::InitVAO()
 {
 	// Create Vertex Array Object
 	vao.create();
 	// Bind the VAO so it is the current active VAO
 	vao.bind();
 }
-void Mesh::InitVBO()
+void waterMesh::InitVBO()
 {
 	//Push vertices
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < width; i++)
 	{
-		for (int j = 0; j < 200; j++)
+		for (int j = 0; j < length; j++)
 		{
-			vertices << QVector3D(i-100, 3, j-100);
+			vertices << QVector3D(location[0] + i, location[1], location[2] + j);
 		}
 	}
 	// Create Buffer for position
@@ -111,11 +139,11 @@ void Mesh::InitVBO()
 	vvbo.allocate(vertices.constData(), vertices.size() * sizeof(QVector3D));
 
 
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < width; i++)
 	{
-		for (int j = 0; j < 200; j++)
+		for (int j = 0; j < length; j++)
 		{
-			uvs << QVector2D(i / 199.0, j / 199.0);
+			uvs << QVector2D(i / width-1.0, j / length-1.0);
 		}
 	}
 	// Create Buffer for uv
@@ -128,21 +156,21 @@ void Mesh::InitVBO()
 	uvbo.allocate(uvs.constData(), uvs.size() * sizeof(QVector2D));
 }
 
-void Mesh::InitEBO()
+void waterMesh::InitEBO()
 {
 	//Push index
-	for (int i = 0; i < 199; i++)
+	for (int i = 0; i < width - 1; i++)
 	{
-		for (int j = 0; j < 199; j++)
+		for (int j = 0; j < length - 1; j++)
 		{
 			//first tri
-			indices << i + j * 200
-				<< i + j * 200 + 1
-				<< i + 1 + (j + 1) * 200;
+			indices << i + j * width
+				<< i + j * width + 1
+				<< i + 1 + (j + 1) * width;
 			//secend tri
-			indices << i + j * 200
-				<< i + (j + 1) * 200
-				<< i + 1 + (j + 1) * 200;
+			indices << i + j * width
+				<< i + (j + 1) * width
+				<< i + 1 + (j + 1) * width;
 		}
 	}
 	vebo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
@@ -152,7 +180,7 @@ void Mesh::InitEBO()
 	vebo->allocate(indices.constData(), indices.size() * sizeof(GLuint));
 }
 
-void Mesh::InitShader(QString vertexShaderPath, QString fragmentShaderPath)
+void waterMesh::InitShader(QString vertexShaderPath, QString fragmentShaderPath)
 {
 	// Create Shader
 	shaderProgram = new QOpenGLShaderProgram();
@@ -182,7 +210,7 @@ void Mesh::InitShader(QString vertexShaderPath, QString fragmentShaderPath)
 	shaderProgram->link();
 }
 
-void Mesh::InitWave()
+void waterMesh::InitWave()
 {
 	for (int i = 0; i < MAX_WAVE; i++)
 	{
@@ -200,7 +228,7 @@ void Mesh::InitWave()
 	
 }
 
-void Mesh::AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction)
+void waterMesh::AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction)
 {
 	this->waves.waveLength[count_wave] = waveLength;
 	this->waves.amplitude[count_wave] = amplitude;

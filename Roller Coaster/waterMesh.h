@@ -23,7 +23,7 @@ struct Wave
 	QVector2D direction[MAX_WAVE];
 };
 
-class Mesh
+class waterMesh
 {
 public:
 	QOpenGLShaderProgram * shaderProgram;
@@ -39,8 +39,17 @@ public:
 	Wave waves;
 	GLint count_wave = 0;
 	GLfloat time = 0;
+	QVector3D location;
+	int width, length;
+	GLfloat* ProjectionMatrix;
+	GLfloat* ModelViewMatrix;
+	QOpenGLTexture* skybox;
+	QOpenGLTexture* normalmap1;
+	QOpenGLTexture* normalmap2;
+	QOpenGLTexture* heightmap;
+
 public:
-	Mesh();
+	waterMesh(QVector3D location, int width, int length);
 	void Init();
 	void InitVAO();
 	void InitVBO();
@@ -48,9 +57,10 @@ public:
 	void InitShader(QString vertexShaderPath, QString fragmentShaderPath);
 	void InitWave();
 	void DimensionTransformation(GLfloat source[], GLfloat target[][4]);
-	void Begin();
-	void Paint(GLfloat* ProjectionMatrix, GLfloat* ModelViewMatrix , bool isNormalmap);
-	void End();
+	void SetProjectionMatrix(GLfloat* ProjectionMatrix);
+	void SetModelViewMatrix(GLfloat* ModelViewMatrix);
+	void SetTexture(QOpenGLTexture* skybox, QOpenGLTexture* normalmap1, QOpenGLTexture* normalmap2, QOpenGLTexture* heightmap);
+	void Paint(bool isNormalmap = 0);
 
 	void AddSineWave(GLfloat waveLength, GLfloat amplitude, GLfloat speed, QVector2D direction);
 };
